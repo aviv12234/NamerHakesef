@@ -24,6 +24,8 @@ class CurrentBot(BotAI):
         await self.build_marines()
         await self.micro()
         await self.depot_control()
+        await self.build_command_centers()
+        await self.build_refineries()
 
     async def build_workers(self):
         command_center = self.townhalls.ready.random
@@ -88,21 +90,48 @@ class CurrentBot(BotAI):
 
     async def depot_control(self):
 
-        for depo in self.structures(UnitTypeId.SUPPLYDEPOT).ready:
+        for depot in self.structures(UnitTypeId.SUPPLYDEPOT).ready:
             for unit in self.enemy_units:
-                if unit.distance_to(depo) < 15:
+                if unit.distance_to(depot) < 15:
                     break
             else:
-                depo(AbilityId.MORPH_SUPPLYDEPOT_LOWER)
+                depot(AbilityId.MORPH_SUPPLYDEPOT_LOWER)
 
 
-        for depo in self.structures(UnitTypeId.SUPPLYDEPOTLOWERED).ready:
+        for depot in self.structures(UnitTypeId.SUPPLYDEPOTLOWERED).ready:
             for unit in self.enemy_units:
-                if unit.distance_to(depo) < 10:
-                    depo(AbilityId.MORPH_SUPPLYDEPOT_RAISE)
+                if unit.distance_to(depot) < 10:
+                    depot(AbilityId.MORPH_SUPPLYDEPOT_RAISE)
                     break
 
+    async def build_command_centers(self):
+        if(
+            self.can_afford(UnitTypeId.COMMANDCENTER)
+            and self.army_count > self.townhalls.amount * 10 #temporary condition
+            and self.already_pending(UnitTypeId.COMMANDCENTER) == 0
+        ):
+            await self.expand_now()
 
+    async def build_refineries(self):
+
+        for command_center in self.townhalls:
+            vespene_geysers = self.vespene_geyser.closer_than(10, command_center)
+            for vespene in vespene_geysers:
+                if(
+                    self.can_afford(UnitTypeId.REFINERY)
+                    #needs to add more conditions
+                ):
+                    await self.build(UnitTypeId.REFINERY, vespene)
+
+    async def build_engineering_bay(self):
+        engineering_bay_positions = self.start_location.center
+
+
+        if(
+            self.can_afford(UnitTypeId.ENGINEERINGBAY)
+            and self.units(UnitTypeId.ENGINEERINGBAY).amount < 2
+        ):
+            await print("bruh")
 
 
 
