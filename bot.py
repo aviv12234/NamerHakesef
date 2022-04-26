@@ -40,20 +40,29 @@ class CurrentBot(BotAI):
 
     async def build_depots(self):
 
+
         depot_positions = self.main_base_ramp.corner_depots
+
+        barracks = self.units(UnitTypeId.BARRACKS)
+        if barracks:
+            print("bruh")
+            depot_positions = {d for d in depot_positions if barracks[0].closest_distance_to(d) == 0}
+
+        
 
         if(
             self.can_afford(UnitTypeId.SUPPLYDEPOT)
             and self.supply_left < 4
             and self.already_pending(UnitTypeId.SUPPLYDEPOT) <= 1
             and len(depot_positions) > 0
+            
         ):
 
             await self.build(UnitTypeId.SUPPLYDEPOT, near=depot_positions.pop())
 
     async def build_barracks(self):
 
-        barrack_positions = self.main_base_ramp.barracks_correct_placement
+        barrack_positions = self.main_base_ramp.barracks_correct_placement ##may need to change that to include addons
 
         if(
             self.can_afford(UnitTypeId.BARRACKS)
@@ -139,7 +148,7 @@ class CurrentBot(BotAI):
         
 
 
-run_game(maps.get("GlitteringAshesAIE"), [
+run_game(maps.get("HardwireAIE"), [
     Bot(Race.Terran, CurrentBot()),
     Computer(Race.Zerg, Difficulty.VeryHard)
 ], realtime=False)
